@@ -204,7 +204,7 @@ class InterregScraper:
                     partner_paragraphs.append(p.get_text(strip=True))
         
         if partner_paragraphs:
-            partners_text += "Partner Information:\n" + "\n".join(partner_paragraphs) + "\n\n"
+            partners_text += "\n".join(partner_paragraphs) + "\n\n"
         
         # Method 3: Look for lists that might contain partner names
         lists = soup.find_all(['ul', 'ol'])
