@@ -4,7 +4,6 @@ import csv
 import json
 from datetime import datetime
 import time
-import logging
 import os
 import re
 
@@ -17,31 +16,21 @@ class InterregScraper:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         })
         
-        # Create scraped_data folder
-        self.output_folder = "scraped data"
+        # Hardcoded output folder path
+        self.folderPath = r"C:\Users\phili\OneDrive\Skrivebord\Coding Projects\Projects\Website_scrapers\scraped data"
+        self.output_folder = self.folderPath
         self.ensure_output_folder()
-        
-        # Setup logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler(os.path.join(self.output_folder, f'interreg_scraper_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log')),
-                logging.StreamHandler()
-            ]
-        )
-        self.logger = logging.getLogger(__name__)
     
     def ensure_output_folder(self):
         """Create the output folder if it doesn't exist"""
         if not os.path.exists(self.output_folder):
             os.makedirs(self.output_folder)
-            self.logger.info(f"Created output folder: {self.output_folder}")
+            print(f"Created output folder: {self.output_folder}")
     
     def scrape_project_data(self):
         """Scrape all project data from the Interreg North Sea project data page"""
         try:
-            self.logger.info(f"Starting to scrape data from: {self.base_url}")
+            print(f"Starting to scrape data from: {self.base_url}")
             
             # Make request to the page
             response = self.session.get(self.base_url)
@@ -53,7 +42,7 @@ class InterregScraper:
             # Find the project data table
             table = soup.find('table')
             if not table:
-                self.logger.error("No table found on the page")
+                print("No table found on the page")
                 return []
             
             # Extract all rows from the table
@@ -77,14 +66,14 @@ class InterregScraper:
                     }
                     projects.append(project_data)
             
-            self.logger.info(f"Successfully scraped {len(projects)} projects")
+            print(f"Successfully scraped {len(projects)} projects")
             return projects
             
         except requests.RequestException as e:
-            self.logger.error(f"Request failed: {e}")
+            print(f"Request failed: {e}")
             return []
         except Exception as e:
-            self.logger.error(f"Scraping failed: {e}")
+            print(f"Scraping failed: {e}")
             return []
     
     def scrape_project_details(self, acronym):
@@ -93,8 +82,6 @@ class InterregScraper:
             # Clean the acronym for URL (remove special characters, convert to lowercase)
             clean_acronym = re.sub(r'[^a-zA-Z0-9]', '', acronym).lower()
             project_url = f"{self.project_base_url}/{clean_acronym}/about-us"
-            
-            self.logger.info(f"Scraping project details from: {project_url}")
             
             # Make request to the project page
             response = self.session.get(project_url)
@@ -107,6 +94,7 @@ class InterregScraper:
             project_details = {
                 'acronym': acronym,
                 'url': project_url,
+                'status': 'success',
                 'title': '',
                 'description': '',
                 'objectives': '',
@@ -114,7 +102,8 @@ class InterregScraper:
                 'start_date': '',
                 'end_date': '',
                 'budget': '',
-                'main_content': ''
+                'main_content': '',
+                'error': ''
             }
             
             # Try to extract title
@@ -127,14 +116,17 @@ class InterregScraper:
             if main_content:
                 project_details['main_content'] = main_content.get_text(strip=True)
             
+            # Improved partner extraction - look for partner-related sections
+            partners_text = self.extract_partner_information(soup)
+            if partners_text:
+                project_details['partners'] = partners_text
+            
             # Look for specific sections
             sections = soup.find_all(['h2', 'h3', 'p'])
             for section in sections:
                 text = section.get_text(strip=True)
                 if 'objective' in text.lower() or 'goal' in text.lower():
                     project_details['objectives'] = text
-                elif 'partner' in text.lower():
-                    project_details['partners'] = text
                 elif 'start' in text.lower() and 'date' in text.lower():
                     project_details['start_date'] = text
                 elif 'budget' in text.lower() or 'funding' in text.lower():
@@ -149,19 +141,122 @@ class InterregScraper:
                 if first_p:
                     project_details['description'] = first_p.get_text(strip=True)
             
-            self.logger.info(f"Successfully scraped details for project: {acronym}")
             return project_details
             
         except requests.RequestException as e:
-            self.logger.error(f"Request failed for project {acronym}: {e}")
-            return {'acronym': acronym, 'error': f'Request failed: {e}'}
+            return {
+                'acronym': acronym,
+                'url': f"{self.project_base_url}/{re.sub(r'[^a-zA-Z0-9]', '', acronym).lower()}/about-us",
+                'status': 'failed',
+                'title': '',
+                'description': '',
+                'objectives': '',
+                'partners': '',
+                'start_date': '',
+                'end_date': '',
+                'budget': '',
+                'main_content': '',
+                'error': f'Request failed: {e}'
+            }
         except Exception as e:
-            self.logger.error(f"Scraping failed for project {acronym}: {e}")
-            return {'acronym': acronym, 'error': f'Scraping failed: {e}'}
+            return {
+                'acronym': acronym,
+                'url': f"{self.project_base_url}/{re.sub(r'[^a-zA-Z0-9]', '', acronym).lower()}/about-us",
+                'status': 'failed',
+                'title': '',
+                'description': '',
+                'objectives': '',
+                'partners': '',
+                'start_date': '',
+                'end_date': '',
+                'budget': '',
+                'main_content': '',
+                'error': f'Scraping failed: {e}'
+            }
+    
+    def extract_partner_information(self, soup):
+        """Extract comprehensive partner information from the page"""
+        partners_text = ""
+        
+        # Method 1: Look for partner-related headings and their content
+        partner_indicators = ['partner', 'partners', 'consortium', 'collaboration', 'team', 'members']
+        
+        for indicator in partner_indicators:
+            # Look for headings containing partner-related words
+            headings = soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+            for heading in headings:
+                heading_text = heading.get_text(strip=True).lower()
+                if indicator in heading_text:
+                    # Found a partner-related heading, extract content
+                    partner_section = self.extract_section_content(heading)
+                    if partner_section:
+                        partners_text += f"{heading.get_text(strip=True)}:\n{partner_section}\n\n"
+        
+        # Method 2: Look for paragraphs containing partner information
+        paragraphs = soup.find_all('p')
+        partner_paragraphs = []
+        
+        for p in paragraphs:
+            p_text = p.get_text(strip=True).lower()
+            if any(indicator in p_text for indicator in partner_indicators):
+                # Check if this paragraph has substantial partner content
+                if len(p.get_text(strip=True)) > 20:  # Avoid very short mentions
+                    partner_paragraphs.append(p.get_text(strip=True))
+        
+        if partner_paragraphs:
+            partners_text += "Partner Information:\n" + "\n".join(partner_paragraphs) + "\n\n"
+        
+        # Method 3: Look for lists that might contain partner names
+        lists = soup.find_all(['ul', 'ol'])
+        for lst in lists:
+            # Check if list items contain partner-related content
+            list_items = lst.find_all('li')
+            partner_items = []
+            
+            for item in list_items:
+                item_text = item.get_text(strip=True).lower()
+                if any(indicator in item_text for indicator in partner_indicators) or len(item_text) > 10:
+                    partner_items.append(item.get_text(strip=True))
+            
+            if partner_items:
+                partners_text += "Partner List:\n" + "\n".join(partner_items) + "\n\n"
+        
+        # Method 4: Look for specific partner patterns in text
+        all_text = soup.get_text()
+        partner_patterns = [
+            r'partner[s]?[:\s]+([^.\n]+)',
+            r'consortium[:\s]+([^.\n]+)',
+            r'collaboration[:\s]+([^.\n]+)',
+            r'team[:\s]+([^.\n]+)',
+            r'member[s]?[:\s]+([^.\n]+)'
+        ]
+        
+        for pattern in partner_patterns:
+            matches = re.findall(pattern, all_text, re.IGNORECASE)
+            for match in matches:
+                if match.strip() and len(match.strip()) > 10:
+                    partners_text += f"Found: {match.strip()}\n"
+        
+        return partners_text.strip() if partners_text else ""
+    
+    def extract_section_content(self, heading):
+        """Extract content that follows a heading until the next heading"""
+        content = []
+        current = heading.find_next_sibling()
+        
+        # Collect content until we hit another heading or run out of siblings
+        while current and current.name not in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+            if current.name in ['p', 'div', 'span'] and current.get_text(strip=True):
+                text = current.get_text(strip=True)
+                if len(text) > 10:  # Only include substantial content
+                    content.append(text)
+            current = current.find_next_sibling()
+        
+        return "\n".join(content)
     
     def scrape_all_project_details(self, projects, delay=1):
         """Scrape detailed information for all projects with a delay to be respectful"""
-        self.logger.info("Starting to scrape detailed information for all projects...")
+        print("Starting to scrape detailed information for all projects...")
         
         all_project_details = []
         total_projects = len(projects)
@@ -169,7 +264,7 @@ class InterregScraper:
         for i, project in enumerate(projects, 1):
             acronym = project['acronym']
             if acronym:
-                self.logger.info(f"Scraping project {i}/{total_projects}: {acronym}")
+                print(f"Scraping project {i}/{total_projects}: {acronym}")
                 
                 # Scrape project details
                 project_detail = self.scrape_project_details(acronym)
@@ -179,7 +274,7 @@ class InterregScraper:
                 if i < total_projects:
                     time.sleep(delay)
         
-        self.logger.info(f"Completed scraping details for {len(all_project_details)} projects")
+        print(f"Completed scraping details for {len(all_project_details)} projects")
         return all_project_details
     
     def extract_acronyms_only(self, projects):
@@ -194,48 +289,6 @@ class InterregScraper:
                 })
         return acronyms
     
-    def save_to_csv(self, data, filename=None):
-        """Save data to CSV file in the scraped_data folder"""
-        if not filename:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"interreg_projects_{timestamp}.csv"
-        
-        # Ensure filename is saved in the scraped_data folder
-        filepath = os.path.join(self.output_folder, filename)
-        
-        try:
-            with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
-                if data and len(data) > 0:
-                    fieldnames = data[0].keys()
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    writer.writeheader()
-                    writer.writerows(data)
-            
-            self.logger.info(f"Data saved to {filepath}")
-            return filepath
-        except Exception as e:
-            self.logger.error(f"Failed to save CSV: {e}")
-            return None
-    
-    def save_to_json(self, data, filename=None):
-        """Save data to JSON file in the scraped_data folder"""
-        if not filename:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"interreg_projects_{timestamp}.json"
-        
-        # Ensure filename is saved in the scraped_data folder
-        filepath = os.path.join(self.output_folder, filename)
-        
-        try:
-            with open(filepath, 'w', encoding='utf-8') as jsonfile:
-                json.dump(data, jsonfile, indent=2, ensure_ascii=False)
-            
-            self.logger.info(f"Data saved to {filepath}")
-            return filepath
-        except Exception as e:
-            self.logger.error(f"Failed to save JSON: {e}")
-            return None
-    
     def print_acronyms(self, acronyms):
         """Print all acronyms in a formatted way"""
         print(f"\n{'='*60}")
@@ -249,54 +302,103 @@ class InterregScraper:
         
         print(f"{'='*60}")
     
-    def run_full_scrape(self):
-        """Run the complete scraping process"""
-        print("Starting Interreg North Sea Project Scraper...")
-        print(f"Target URL: {self.base_url}")
-        print(f"Output folder: {self.output_folder}")
-        print("-" * 60)
-        
-        # Scrape all project data
-        projects = self.scrape_project_data()
-        
-        if not projects:
-            print("No projects found. Please check the website or try again later.")
-            return
-        
-        # Extract acronyms only
-        acronyms = self.extract_acronyms_only(projects)
-        
-        # Display results
-        self.print_acronyms(acronyms)
-        
-        # Save data to files
-        csv_file = self.save_to_csv(projects)
-        json_file = self.save_to_json(projects)
-        
-        # Save acronyms only
-        acronyms_csv = self.save_to_csv(acronyms, f"interreg_acronyms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
-        acronyms_json = self.save_to_json(acronyms, f"interreg_acronyms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
-        
-        print(f"\nData saved to folder: {self.output_folder}")
-        print(f"  - Full project data: {os.path.basename(csv_file)}")
-        print(f"  - Full project data: {os.path.basename(json_file)}")
-        print(f"  - Acronyms only: {os.path.basename(acronyms_csv)}")
-        print(f"  - Acronyms only: {os.path.basename(acronyms_json)}")
-        
-        return {
-            'projects': projects,
-            'acronyms': acronyms,
-            'files': {
-                'csv': csv_file,
-                'json': json_file,
-                'acronyms_csv': acronyms_csv,
-                'acronyms_json': acronyms_json
+    def create_ultimate_files(self, projects, project_details):
+        """Create both CSV and JSON versions of the ultimate scraped information"""
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            csv_filename = f"interreg_ultimate_{timestamp}.csv"
+            json_filename = f"interreg_ultimate_{timestamp}.json"
+            
+            csv_filepath = os.path.join(self.output_folder, csv_filename)
+            json_filepath = os.path.join(self.output_folder, json_filename)
+            
+            # Create the ultimate dataset
+            ultimate_data = []
+            
+            for project in projects:
+                # Find corresponding detailed information
+                project_detail = next((pd for pd in project_details if pd['acronym'] == project['acronym']), None)
+                
+                if project_detail:
+                    # Combine basic and detailed data
+                    ultimate_row = {
+                        'acronym': project['acronym'],
+                        'call': project['call'],
+                        'priority': project['priority'],
+                        'specific_objective': project['specific_objective'],
+                        'summary': project['summary'],
+                        'lead_partner': project['lead_partner'],
+                        'start_end': project['start_end'],
+                        'total_budget': project['total_budget'],
+                        'erdf_funding': project['erdf_funding'],
+                        'norway_funding': project['norway_funding'],
+                        'project_url': project_detail['url'],
+                        'status': project_detail['status'],
+                        'title': project_detail['title'],
+                        'description': project_detail['description'],
+                        'objectives': project_detail['objectives'],
+                        'partners': project_detail['partners'],
+                        'start_date': project_detail['start_date'],
+                        'end_date': project_detail['end_date'],
+                        'budget': project_detail['budget'],
+                        'main_content': project_detail['main_content'],
+                        'error': project_detail['error']
+                    }
+                else:
+                    # If no detailed info, just use basic data
+                    ultimate_row = {
+                        'acronym': project['acronym'],
+                        'call': project['call'],
+                        'priority': project['priority'],
+                        'specific_objective': project['specific_objective'],
+                        'summary': project['summary'],
+                        'lead_partner': project['lead_partner'],
+                        'start_end': project['start_end'],
+                        'total_budget': project['total_budget'],
+                        'erdf_funding': project['erdf_funding'],
+                        'norway_funding': project['norway_funding'],
+                        'project_url': '',
+                        'status': 'not_scraped',
+                        'title': '',
+                        'description': '',
+                        'objectives': '',
+                        'partners': '',
+                        'start_date': '',
+                        'end_date': '',
+                        'budget': '',
+                        'main_content': '',
+                        'error': 'No detailed information available'
+                    }
+                
+                ultimate_data.append(ultimate_row)
+            
+            # Save to CSV
+            with open(csv_filepath, 'w', newline='', encoding='utf-8') as csvfile:
+                if ultimate_data and len(ultimate_data) > 0:
+                    fieldnames = ultimate_data[0].keys()
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    writer.writeheader()
+                    writer.writerows(ultimate_data)
+            
+            # Save to JSON
+            with open(json_filepath, 'w', encoding='utf-8') as jsonfile:
+                json.dump(ultimate_data, jsonfile, indent=2, ensure_ascii=False)
+            
+            print(f"Ultimate CSV file created: {csv_filepath}")
+            print(f"Ultimate JSON file created: {json_filepath}")
+            
+            return {
+                'csv': csv_filepath,
+                'json': json_filepath
             }
-        }
+            
+        except Exception as e:
+            print(f"Failed to create ultimate files: {e}")
+            return None
     
-    def run_detailed_scrape(self, delay=1):
-        """Run the complete scraping process including detailed project information"""
-        print("Starting Interreg North Sea Project Scraper with Detailed Information...")
+    def run_ultimate_scrape(self, delay=1):
+        """Run the complete scraping process and create only the ultimate CSV file"""
+        print("Starting Interreg North Sea Project Scraper...")
         print(f"Target URL: {self.base_url}")
         print(f"Output folder: {self.output_folder}")
         print("-" * 60)
@@ -314,76 +416,41 @@ class InterregScraper:
         # Display results
         self.print_acronyms(acronyms)
         
-        # Save basic data to files
-        csv_file = self.save_to_csv(projects)
-        json_file = self.save_to_json(projects)
-        acronyms_csv = self.save_to_csv(acronyms, f"interreg_acronyms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
-        acronyms_json = self.save_to_json(acronyms, f"interreg_acronyms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
-        
-        print(f"\nBasic data saved to folder: {self.output_folder}")
-        print(f"  - Full project data: {os.path.basename(csv_file)}")
-        print(f"  - Full project data: {os.path.basename(json_file)}")
-        print(f"  - Acronyms only: {os.path.basename(acronyms_csv)}")
-        print(f"  - Acronyms only: {os.path.basename(acronyms_json)}")
-        
         # Now scrape detailed information for each project
         print(f"\nStarting detailed project information scraping...")
         print(f"This may take a while as we scrape {len(projects)} individual project pages...")
         
         project_details = self.scrape_all_project_details(projects, delay)
         
-        # Save detailed project information
-        details_csv = self.save_to_csv(project_details, f"interreg_project_details_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
-        details_json = self.save_to_json(project_details, f"interreg_project_details_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+        # Create the ultimate CSV file
+        ultimate_files = self.create_ultimate_files(projects, project_details)
         
-        print(f"\nDetailed project information saved:")
-        print(f"  - Project details: {os.path.basename(details_csv)}")
-        print(f"  - Project details: {os.path.basename(details_json)}")
+        if ultimate_files:
+            print(f"\n🎉 ULTIMATE FILES CREATED SUCCESSFULLY!")
+            print(f"📁 CSV File: {os.path.basename(ultimate_files['csv'])}")
+            print(f"📁 JSON File: {os.path.basename(ultimate_files['json'])}")
+            print(f"📂 Location: {self.output_folder}")
+            print(f"📊 Total projects: {len(projects)}")
+            print(f"🔍 Total detailed pages scraped: {len(project_details)}")
         
-        return {
-            'projects': projects,
-            'acronyms': acronyms,
-            'project_details': project_details,
-            'files': {
-                'csv': csv_file,
-                'json': json_file,
-                'acronyms_csv': acronyms_csv,
-                'acronyms_json': acronyms_json,
-                'details_csv': details_csv,
-                'details_json': details_json
-            }
-        }
+        return ultimate_files
 
 def main():
     """Main function to run the scraper"""
     scraper = InterregScraper()
     
     try:
-        print("Choose scraping mode:")
-        print("1. Basic scraping (project list and acronyms only)")
-        print("2. Detailed scraping (includes individual project pages)")
-        
-        choice = input("Enter your choice (1 or 2): ").strip()
-        
-        if choice == "2":
-            results = scraper.run_detailed_scrape()
-        else:
-            results = scraper.run_full_scrape()
-        
+        results = scraper.run_ultimate_scrape()
         if results:
-            print(f"\nScraping completed successfully!")
-            print(f"Total projects scraped: {len(results['projects'])}")
-            print(f"Total acronyms extracted: {len(results['acronyms'])}")
-            if 'project_details' in results:
-                print(f"Total detailed project pages scraped: {len(results['project_details'])}")
-            print(f"All files saved in: {scraper.output_folder}")
+            print(f"\n✅ Scraping completed successfully!")
+            print(f"🎯 Your ultimate CSV file is ready in: {scraper.output_folder}")
         else:
-            print("Scraping failed. Check the logs for details.")
+            print("❌ Scraping failed. Please check the output above for details.")
     
     except KeyboardInterrupt:
-        print("\nScraping interrupted by user.")
+        print("\n⏹️ Scraping interrupted by user.")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"❌ An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
