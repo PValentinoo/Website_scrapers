@@ -1,0 +1,327 @@
+[
+  {
+    "acronym": "DigiH4A",
+    "call": "Call 4C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "BRAVE",
+    "call": "Call 4C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "SIRR",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "DISCO",
+    "call": "Call 4C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "Digital Kiosks",
+    "call": "Call 4C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "H2ignite",
+    "call": "Call 4C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "CircleBIM",
+    "call": "Call 4C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "SUPER",
+    "call": "Call 2B (SSP)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "SSCH",
+    "call": "Call 4C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "STORM_SAFE",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "ACE",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "CR",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "D4A",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "3ST",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "SUSTAIN-3D",
+    "call": "Call 2B (SSP)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "GRIT",
+    "call": "Call 3B (SSP)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "OASIS",
+    "call": "Call 4C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "NESSIE",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 1"
+  },
+  {
+    "acronym": "WaterWarmth",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "REDII Ports",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "LIHYP",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "DIOL",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "GRITH",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "COPPER",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "ANCHOR",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "CIBIP",
+    "call": "Call 1B (SSP)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "CTB",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "CEO",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "GREEN",
+    "call": "Call 2B (SSP)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "BBoBB",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "CLOSECYCLE",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "MM",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "InnoWaTr",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "SN2",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "SMALL",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "Active Cities",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "MoLo Hubs",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "GREEN SUPPLY CHAINS",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "MegaBITS",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "ShareDiMobiHub",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 2"
+  },
+  {
+    "acronym": "FIER",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "COOL CITIES",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "MANABAS COAST",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "Blue Transition",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "KID",
+    "call": "Call 1B (SSP)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "Anemoi",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "Biodiverse Cities",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "TREASURE",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "DivGrass",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "Clancy",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "DARKER SKY",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "REMARCO",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "DEMASK",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "EXPBIO",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 3"
+  },
+  {
+    "acronym": "FREIIA",
+    "call": "Call 1C (FA)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "Norsaic",
+    "call": "Call 2C (FA)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "GLEAM NSR",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "Green Team",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "LISTEN",
+    "call": "Call 3B (SSP)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "NS H2V Ports",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "SELECT",
+    "call": "Call 2B (SSP)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "SPIES",
+    "call": "Call 3B (SSP)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "Speak Up",
+    "call": "Call 3C (FA)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "EHRIN",
+    "call": "Call 2B (SSP)",
+    "priority": "Priority 4"
+  },
+  {
+    "acronym": "BIOZE",
+    "call": "Call 1B (SSP)",
+    "priority": "Priority 4"
+  }
+]
